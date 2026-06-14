@@ -1,4 +1,4 @@
-from fastapi import FastAPI
+from fastapi import FastAPI , status , HTTPException
 import uvicorn
 from pydantic import BaseModel
 
@@ -55,4 +55,73 @@ def delete_todo(todo_id : int):
 
 
 # path + query + body parameter
+
+# response model
+
+class User(BaseModel):
+    name : str
+    age : int
+    password : str
+    
+class UserResponse(BaseModel):
+    name : str
+    age : int
+    
+    
+@app.get("/user" , response_model=UserResponse)
+def get_user_info():
+    return {
+        "name" : "shivam",
+        "age" : 20,
+        "password" : "shiv123"
+    }
+    
+    
+# status code
+
+@app.post("/create_user" , status_code=status.HTTP_201_CREATED)
+def create_user():
+    return {
+        "message" : "user created successfully!"
+    }
+ 
+@app.get("/create_user", status_code=status.HTTP_202_ACCEPTED)
+def create_user():
+    return {
+        "status": "success",
+        "message" : "user fetched",
+        "data": {
+            "name" : "shivam",
+            "age" : 20,
+        }
+    }
+    
+@app.get("/users/{users_id}")
+def get_user_id(users_id : int):
+    if users_id != 1:
+        raise HTTPException(
+            status_code=404, #user not found
+            detail="user not found"
+        )
+    return {
+        "id" : 1,
+        "name" : "shivam",
+        "age" : 20
+    }
+    
+# global/custom exception handling
+
+class usernotfoundexception(Exception): #custom exception making
+    def __init__(self, name: str):
+        self.name = name
+        
+@app.get("/client/{name}")
+def get_name(name :str):
+    if name != "shivam":
+        raise usernotfoundexception(name)
+    return{
+        "message": "user found",
+        "name": name
+    }
+
 
